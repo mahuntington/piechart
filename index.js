@@ -10,7 +10,11 @@ var dataset = [
 
 var radius = Math.min(WIDTH, HEIGHT) / 2;
 
-var color = d3.scaleOrdinal(d3.schemeCategory10);
+var colorScale = d3.scaleOrdinal();
+colorScale.range(d3.schemeCategory10);
+colorScale.domain(dataset.map(function(element){
+    return element.label;
+}));
 
 d3.select('svg')
     .attr('width', WIDTH)
@@ -33,5 +37,5 @@ var path = container.selectAll('path')
     .append('path')
     .attr('d', arc)
     .attr('fill', function(d) {
-        return color(d.data.label);
+        return colorScale(d.data.label);
     });
