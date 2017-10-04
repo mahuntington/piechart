@@ -2,10 +2,10 @@ var WIDTH = 360;
 var HEIGHT = 360;
 
 var dataset = [
-    { label: 'Abulia', count: 10 },
-    { label: 'Betelgeuse', count: 20 },
-    { label: 'Cantaloupe', count: 30 },
-    { label: 'Dijkstra', count: 40 }
+    { id: 1, label: 'Abulia', count: 10 },
+    { id: 2, label: 'Betelgeuse', count: 20 },
+    { id: 3, label: 'Cantaloupe', count: 30 },
+    { id: 4, label: 'Dijkstra', count: 40 }
 ];
 
 var radius = Math.min(WIDTH, HEIGHT) / 2;
@@ -32,10 +32,34 @@ var pie = d3.pie()
     .sort(null);
 
 var path = container.selectAll('path')
-    .data(pie(dataset))
+    .data(pie(dataset), function(datum){
+        return datum.data.id
+    })
     .enter()
     .append('path')
     .attr('d', arc)
     .attr('fill', function(d) {
         return colorScale(d.data.label);
+    })
+    .each(function(d) { this._current = d; });
+
+path.on('click', function(clickedDatum, clickedIndex){
+    dataset = dataset.filter(function(currentDatum, currentIndex){
+        return clickedDatum.data.id !== currentDatum.id
     });
+    path
+        .data(pie(dataset), function(datum){
+            return datum.data.id
+        })
+        .exit().remove();
+
+    path.transition()
+        .duration(750)
+        .attrTween('d', function(d) {
+            var interpolate = d3.interpolate(this._current, d);
+            this._current = interpolate(0);
+            return function(t) {
+                return arc(interpolate(t));
+            };
+        });
+});
